@@ -38,20 +38,26 @@ class Game(object):
           
         self.initMatrix()
         pygame.init()
-        pygame.display.init()
+        # pygame.display.init()
         self.screen = pygame.display.set_mode((self.width, self.height))
         self.screen.fill(self.colorUnfill, (0, 0, self.width, self.height))
-        #self.screen.fill((100, 100, 255))
+        # self.screen.fill((100, 100, 255))
         pygame.display.flip()
-        #pygame.time.wait(2000)
+        # pygame.time.wait(2000)
         self.drawGrid(self.offset_x, self.offset_y)
         
         self.clock = pygame.time.Clock()
     
+    
     def initMatrix(self):
         col = (self.width - self.offset_x * 2) / (self.gridSize + 1)
         row = (self.height - self.offset_x - self.offset_y) /(self.gridSize + 1)
-        
+        for y in xrange(self.row):
+            self.matrix.append([])
+            self.next_matrix.append([])
+            for x in xrange(self.col):
+                self.matrix[y].append(False)
+                self.next_matrix[y].append(False)
     
     
     def drawGrid(self, offset_x, offset_y):
@@ -96,14 +102,15 @@ class Game(object):
     
     def run(self):
     
-        self.clock.tick(30)
+        
         mouse_down = False
         mouse_up = True
         sz = self.gridSize + 1
+        last_rect = pygame.Rect(0, 0, 0, 0) # 这个对象用于判断鼠标是否移出了当前细胞的范围
         
         # 循环检测输入的事件，进行相应的处理
         while True:
-            
+            self.clock.tick(30)
             for event in pygame.event.get():
                 # 退出程序
                 if event.type == pygame.QUIT:
@@ -114,7 +121,7 @@ class Game(object):
                 
                 elif event.type == pygame.MOUSEBUTTONDOWN:
                     mouse_down = True
-                    mouse_up = False
+                    # mouse_up = False
                     
                 elif event.type == pygame.MOUSEBUTTONUP:
                     mouse_down = False
@@ -131,7 +138,12 @@ class Game(object):
                 # pygame.display.flip() 
                 
                 x, y = pygame.mouse.get_pos()
-                print x, y
+                # 判断鼠标是否移出当前细胞
+                if last_rect.collidepoint(x, y):
+                    continue
+                mouse_up = False
+                
+                
                 # 判断目前鼠标所在位置在第几格内
                 # 这里x要减2是因为鼠标点在格子右侧部分时，会错误地标记到右边的格子上。
                 # Bug，未修复。
@@ -146,18 +158,18 @@ class Game(object):
                 # 忽略在显示区域外的点
                 
                 rect = (off_x + 1, off_y + 1, self.gridSize, self.gridSize)
+                last_rect = pygame.Rect(off_x, off_y, sz, sz)
                 
-                #if self.matrix[idx_y][idx_x] == True:
-                if True:
+                
+                
+                
+                # 
+                if self.matrix[idx_y][idx_x] == True:
                     pygame.draw.rect(self.screen, self.colorFill, rect)
-                    # self.matrix[idx_y][idx_x] = False
-                    
+                    self.matrix[idx_y][idx_x] = False     
                 else:
                     pygame.draw.rect(self.screen, self.colorUnfill, rect)
-                    # self.matrix[idx_y][idx_x] = True    
-                
-                
-                
+                    self.matrix[idx_y][idx_x] = True    
                 pygame.display.flip()
                 
                 
