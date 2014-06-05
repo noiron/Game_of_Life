@@ -95,17 +95,18 @@ class Game(object):
         
     def handle_keyboard(self, event):
         if event.key == pygame.K_q or event.key == pygame.K_ESCAPE:
-                pygame.quit()
+            pygame.quit()
+        elif event.key == pygame.K_SPACE:
+            print u"已按下空格键，游戏启动。"
+            print self.clock.tick()
+            self.conway()
+            
                 
         
-    
-    
     def run(self):
-    
-        
+        sz = self.gridSize + 1
         mouse_down = False
         mouse_up = True
-        sz = self.gridSize + 1
         last_rect = pygame.Rect(0, 0, 0, 0) # 这个对象用于判断鼠标是否移出了当前细胞的范围
         
         # 循环检测输入的事件，进行相应的处理
@@ -118,16 +119,12 @@ class Game(object):
                 # 键盘有键按下，则转去子程序handle_keyboard执行
                 elif event.type == pygame.KEYDOWN:
                     self.handle_keyboard(event)
-                
-                elif event.type == pygame.MOUSEBUTTONDOWN:
-                    mouse_down = True
-                    # mouse_up = False
-                    
                 elif event.type == pygame.MOUSEBUTTONUP:
                     mouse_down = False
-                    mouse_up = True
-                
-        
+                    mouse_up = True     
+                elif event.type == pygame.MOUSEBUTTONDOWN:
+                    mouse_down = True
+                    
             if mouse_down == True:
                 ## just for fun
                 # print "test"
@@ -138,11 +135,15 @@ class Game(object):
                 # pygame.display.flip() 
                 
                 x, y = pygame.mouse.get_pos()
-                # 判断鼠标是否移出当前细胞
-                if last_rect.collidepoint(x, y):
+                
+                if (x > self.width - self.offset_x 
+                    or y > self.height - self.offset_x
+                    or x < self.offset_x or y < self.offset_y):
+                    continue
+				# 判断鼠标是否移出当前细胞
+                if not mouse_up and last_rect.collidepoint(x, y):
                     continue
                 mouse_up = False
-                
                 
                 # 判断目前鼠标所在位置在第几格内
                 # 这里x要减2是因为鼠标点在格子右侧部分时，会错误地标记到右边的格子上。
@@ -151,28 +152,24 @@ class Game(object):
                 idx_x = (x - self.offset_x) / sz    
                 idx_y = (y - self.offset_y) / sz
                 # 所在格子的左上角的坐标
-                off_x = (x) / sz * sz
+                off_x = x / sz * sz
                 off_y = y / sz * sz
-                
-                # TODO:
-                # 忽略在显示区域外的点
-                
+               
                 rect = (off_x + 1, off_y + 1, self.gridSize, self.gridSize)
                 last_rect = pygame.Rect(off_x, off_y, sz, sz)
                 
-                
-                
-                
-                # 
                 if self.matrix[idx_y][idx_x] == True:
-                    pygame.draw.rect(self.screen, self.colorFill, rect)
+                    pygame.draw.rect(self.screen, self.colorUnfill, rect)
                     self.matrix[idx_y][idx_x] = False     
                 else:
-                    pygame.draw.rect(self.screen, self.colorUnfill, rect)
+                    pygame.draw.rect(self.screen, self.colorFill, rect)
                     self.matrix[idx_y][idx_x] = True    
                 pygame.display.flip()
                 
                 
+    def conway(self):
+        running = True
+        
                 
                 
                 
@@ -189,6 +186,7 @@ class Game(object):
 def main():
     game = Game()
     game.run()
+    
 
 if __name__ == "__main__":
     main()
