@@ -91,6 +91,7 @@ class Game(object):
         
     def handle_keyboard(self, event):
         if event.key == pygame.K_q or event.key == pygame.K_ESCAPE:
+            print u"游戏结束，已退出。"
             pygame.quit()
         elif event.key == pygame.K_SPACE:
             print u"已按下空格键，游戏启动。"
@@ -99,6 +100,15 @@ class Game(object):
         elif event.key == pygame.K_r:
             print u"屏幕已清空。"
             self.reset_grid()
+        # 设置随机概率
+        elif event.key == pygame.K_d:
+            self.random_state(0)
+            self.print_state()
+        # 按相应数字键，选择给定概率值
+        elif event.key >= pygame.K_1 and event.key <= K_9:
+            self.random_state(int(event.key - K_1 + 1))
+            self.print_state()
+        
             
                        
     def run(self):
@@ -249,7 +259,23 @@ class Game(object):
                     
         return neighbours            
         
-               
+    
+    def random_state(self, mode):
+        probablity = [0.05, 0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 0.9]
+        idx = 0
+        if mode == 0:
+            idx = int(random.random() * 10)
+        elif mode >= 0 and mode <= 9:
+            idx = mode
+        
+        for r in xrange(self.row):
+            for c in xrange(self.col):
+                if probablity[idx] > random.random():
+                    self.matrix[r][c] = True
+                else:
+                    self.matrix[r][c] = False
+
+    
 def main():
     game = Game()
     game.run()
