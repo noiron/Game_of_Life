@@ -38,12 +38,9 @@ class Game(object):
           
         self.initMatrix()
         pygame.init()
-        # pygame.display.init()
         self.screen = pygame.display.set_mode((self.width, self.height))
         self.screen.fill(self.colorUnfill, (0, 0, self.width, self.height))
-        # self.screen.fill((100, 100, 255))
         pygame.display.flip()
-        # pygame.time.wait(2000)
         self.drawGrid(self.offset_x, self.offset_y)
         
         self.clock = pygame.time.Clock()
@@ -90,7 +87,6 @@ class Game(object):
         
         
         pygame.display.flip()
-        # pygame.time.wait(10000)
         
         
     def handle_keyboard(self, event):
@@ -98,11 +94,13 @@ class Game(object):
             pygame.quit()
         elif event.key == pygame.K_SPACE:
             print u"已按下空格键，游戏启动。"
-            print self.clock.tick()
+            # print self.clock.tick()
             self.conway()
+        elif event.key == pygame.K_r:
+            print u"屏幕已清空。"
+            self.reset_grid()
             
-                
-        
+                       
     def run(self):
         sz = self.gridSize + 1
         mouse_down = False
@@ -126,7 +124,7 @@ class Game(object):
                     mouse_down = True
                     
             if mouse_down == True:
-                ## just for fun
+                ## just for fun here
                 # print "test"
                 # pygame.draw.line(self.screen, 
                     # (random.random()*256, random.random()*256, random.random()*256), 
@@ -167,22 +165,91 @@ class Game(object):
                 pygame.display.flip()
                 
                 
+    # 按下空格键后，游戏开始运行，程序转到此处运行            
     def conway(self):
         running = True
+        pause = False
+        
+        while running:
+            self.clock.tick(10)
+            x, y = pygame.mouse.get_pos()
+            
+            for event in pygame.event.get():
+                if event.type == pygame.QUIT:
+                    pygame.quit()
+                elif event.type == pygame.KEYDOWN:
+                    if event.key == pygame.K_q:
+                        pygame.quit()
+                    elif event.key == pygame.K_SPACE:
+                        pause = not pause
+                    elif event.key == pygame.K_r:
+                        running = False
+                        self.reset_grid()
+            
+            if pause == True:
+                continue
+                
+            self.next_gen()
+            self.print_state()
+    
+    
+    def reset_grid(self):
+        for y in xrange(self.row):
+            for x in xrange(self.col):
+                self.matrix[y][x] = False
+                self.next_matrix[y][x] = False
+        self.print_state()
+    
+    
+    def print_state(self):
+        for r in xrange(self.row):
+            for c in xrange(self.col):
+                rect = (c * (self.gridSize + 1) + self.offset_x + 1,
+                    r * (self.gridSize + 1) + self.offset_y + 1,
+                    self.gridSize, self.gridSize)
+                if self.matrix[r][c] == True:
+                    pygame.draw.rect(self.screen, self.colorFill, rect)
+                elif self.matrix[r][c] == False:
+                    pygame.draw.rect(self.screen, self.colorUnfill, rect)
+        pygame.display.flip()
         
                 
+    def next_gen(self):
+        for row in xrange(self.row):
+            for col in xrange(self.col):
+                neighbours = self.getNeighbours(row, col)
+                if self.matrix[row][col] == True: 
+                    if  neighbours < 2 or neighbours >3:
+                        self.next_matrix[row][col] = False
+                    else:
+                        self.next_matrix[row][col] = True
+                else:
+                    if  neighbours == 3:
+                        self.next_matrix[row][col] = True 
+                    else:
+                        self.next_matrix[row][col] = False
                 
-                
-                
-                
+        for row in xrange(self.row):
+            for col in xrange(self.col):
+                self.matrix[row][col] = self.next_matrix[row][col]
+                self.next_matrix[row][col] = False
+        
+        
+    def getNeighbours(self, r, c):
+        dr = [-1, -1, -1, 0, 1, 1, 1, 0]
+        dc = [-1, 0, 1, 1, 1, 0, -1, -1]
+        neighbours = 0
+        
+        for i in xrange(8):
+            row = r + dr[i]
+            col = c + dc[i]
+            if row >= 0 and col >= 0 and row < self.row and col < self.col:
+                if self.matrix[row][col] == True:
+                    neighbours += 1
                     
-                    
-                    
+        return neighbours            
         
-        
-        
-
-        
+               
 def main():
     game = Game()
     game.run()
